@@ -1,5 +1,3 @@
-const http = require("http");
-
 const {
     default: makeWASocket,
     useMultiFileAuthState,
@@ -7,9 +5,7 @@ const {
 } = require("@whiskeysockets/baileys");
 
 const P = require("pino");
-const qrcodeTerminal = require("qrcode-terminal");
-const QRCode = require("qrcode");
-
+const qrcode = require("qrcode-terminal");
 require("dotenv").config();
 
 const { GoogleGenAI } = require("@google/genai");
@@ -18,8 +14,6 @@ const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY
 });
 
-let latestQR = null;
-let whatsappConnected = false;
 
 const ONA_TOWERS_KNOWLEDGE = [
     "You are the AI assistant for ONA TOWERS in Zanzibar.",
@@ -112,8 +106,16 @@ const ONA_TOWERS_KNOWLEDGE = [
     "- If information is unavailable, say that it is not currently available.",
     "- Keep normal WhatsApp responses reasonably short.",
     "- Give more detail when the customer asks.",
-    "- Answer in the same language used by the customer when possible."
+    "",
+    "LANGUAGE RULES:",
+    "- Detect the language used by the customer.",
+    "- If the customer writes in English, reply entirely in English.",
+    "- If the customer writes in Swahili, reply entirely in Swahili.",
+    "- If the customer mixes English and Swahili, use the dominant language of the customer's message.",
+    "- Do not switch to another language unnecessarily.",
+    "- Keep the same language throughout the reply unless the customer asks for another language."
 ].join("\n");
+
 
 
 async function askGemini(userMessage) {
@@ -127,320 +129,99 @@ async function askGemini(userMessage) {
         "Answer the customer directly."
     ].join("\n");
 
-    const response = await ai.models.generateContent({
-        model: "gemini-3.6-flash",
-        contents: prompt
-    });
 
-    return response.text;
-}
+    const maxAttempts = 3;
 
-
-// ============================================================
-// HTTP SERVER
-// ============================================================
-
-const PORT = process.env.PORT || 10000;
-
-const server = http.createServer(async (req, res) => {
-
-    // Home page
-    if (req.url === "/") {
-
-        res.writeHead(200, {
-            "Content-Type": "text/html; charset=utf-8"
-        });
-
-        res.end(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta name="viewport" content="width=device-width, initial-scale=1">
-                <title>ONA TOWERS WhatsApp Bot</title>
-
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        text-align: center;
-                        padding: 40px;
-                        background: #f5f5f5;
-                    }
-
-                    .box {
-                        background: white;
-                        max-width: 500px;
-                        margin: auto;
-                        padding: 30px;
-                        border-radius: 15px;
-                        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-                    }
-
-                    a {
-                        display: inline-block;
-                        margin-top: 20px;
-                        padding: 12px 25px;
-                        background: #25D366;
-                        color: white;
-                        text-decoration: none;
-                        border-radius: 8px;
-                    }
-                </style>
-            </head>
-
-            <body>
-
-                <div class="box">
-
-                    <h1>ONA TOWERS</h1>
-
-                    <h2>WhatsApp AI Bot</h2>
-
-                    <p>
-                        Status:
-                        <strong>
-                            ${whatsappConnected ? "Connected" : "Waiting for WhatsApp"}
-                        </strong>
-                    </p>
-
-                    ${
-                        whatsappConnected
-                            ? "<p>WhatsApp is already connected.</p>"
-                            : '<a href="/qr">Open WhatsApp QR Code</a>'
-                    }
-
-                </div>
-
-            </body>
-            </html>
-        `);
-
-        return;
-    }
-
-
-    // QR page
-    if (req.url === "/qr") {
-
-        if (whatsappConnected) {
-
-            res.writeHead(200, {
-                "Content-Type": "text/html; charset=utf-8"
-            });
-
-            res.end(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta name="viewport" content="width=device-width, initial-scale=1">
-                    <title>WhatsApp Connected</title>
-                </head>
-
-                <body style="
-                    font-family: Arial;
-                    text-align: center;
-                    padding: 50px;
-                ">
-
-                    <h1>WhatsApp Connected ✅</h1>
-
-                    <p>ONA TOWERS chatbot is already connected.</p>
-
-                </body>
-                </html>
-            `);
-
-            return;
-        }
-
-
-        if (!latestQR) {
-
-            res.writeHead(200, {
-                "Content-Type": "text/html; charset=utf-8"
-            });
-
-            res.end(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta name="viewport" content="width=device-width, initial-scale=1">
-                    <meta http-equiv="refresh" content="3">
-                </head>
-
-                <body style="
-                    font-family: Arial;
-                    text-align: center;
-                    padding: 50px;
-                ">
-
-                    <h2>Waiting for WhatsApp QR code...</h2>
-
-                    <p>This page will refresh automatically.</p>
-
-                </body>
-                </html>
-            `);
-
-            return;
-        }
-
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
 
         try {
 
-            const qrDataURL = await QRCode.toDataURL(latestQR, {
-                width: 500,
-                margin: 4
+            const response = await ai.models.generateContent({
+                model: "gemini-3.6-flash",
+                contents: prompt
             });
 
-            res.writeHead(200, {
-                "Content-Type": "text/html; charset=utf-8"
-            });
+            if (response && response.text) {
+                return response.text.trim();
+            }
 
-            res.end(`
-                <!DOCTYPE html>
-
-                <html>
-
-                <head>
-
-                    <meta name="viewport"
-                          content="width=device-width, initial-scale=1">
-
-                    <title>Scan WhatsApp QR</title>
-
-                    <style>
-
-                        body {
-                            font-family: Arial, sans-serif;
-                            text-align: center;
-                            background: #f5f5f5;
-                            padding: 20px;
-                        }
-
-                        .container {
-                            background: white;
-                            max-width: 600px;
-                            margin: auto;
-                            padding: 25px;
-                            border-radius: 15px;
-                            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-                        }
-
-                        img {
-                            width: 100%;
-                            max-width: 500px;
-                            height: auto;
-                        }
-
-                        .instructions {
-                            text-align: left;
-                            max-width: 450px;
-                            margin: 20px auto;
-                        }
-
-                    </style>
-
-                </head>
-
-                <body>
-
-                    <div class="container">
-
-                        <h1>ONA TOWERS</h1>
-
-                        <h2>Scan WhatsApp QR Code</h2>
-
-                        <img src="${qrDataURL}" alt="WhatsApp QR Code">
-
-                        <div class="instructions">
-
-                            <h3>How to connect:</h3>
-
-                            <ol>
-
-                                <li>
-                                    Open WhatsApp on your phone.
-                                </li>
-
-                                <li>
-                                    Go to Settings.
-                                </li>
-
-                                <li>
-                                    Select Linked Devices.
-                                </li>
-
-                                <li>
-                                    Select Link a Device.
-                                </li>
-
-                                <li>
-                                    Scan the QR code above.
-                                </li>
-
-                            </ol>
-
-                        </div>
-
-                        <p>
-                            The page will automatically refresh
-                            when the connection status changes.
-                        </p>
-
-                    </div>
-
-                </body>
-
-                </html>
-            `);
+            throw new Error("Gemini returned an empty response.");
 
         } catch (error) {
 
-            console.error("QR generation error:", error);
+            console.error(
+                `Gemini attempt ${attempt}/${maxAttempts} failed:`,
+                error?.message || error
+            );
 
-            res.writeHead(500, {
-                "Content-Type": "text/plain"
-            });
+            if (attempt < maxAttempts) {
 
-            res.end("Unable to generate QR code.");
+                const waitTime = attempt * 3000;
 
+                console.log(
+                    `Retrying Gemini in ${waitTime / 1000} seconds...`
+                );
+
+                await new Promise(resolve =>
+                    setTimeout(resolve, waitTime)
+                );
+
+            } else {
+
+                console.error(
+                    "Gemini failed after all retry attempts."
+                );
+            }
         }
-
-        return;
     }
 
 
-    // Health check
-    if (req.url === "/health") {
+    return null;
+}
 
-        res.writeHead(200, {
-            "Content-Type": "text/plain"
-        });
 
-        res.end("ONA TOWERS WhatsApp bot is running");
 
-        return;
+function getFallbackReply(userMessage) {
+
+    const text = userMessage.toLowerCase();
+
+    const swahiliWords = [
+        "habari",
+        "mambo",
+        "ipo",
+        "wapi",
+        "bei",
+        "gharama",
+        "nyumba",
+        "vyumba",
+        "apartimenti",
+        "ghorofa",
+        "mradi",
+        "ona tower",
+        "ona towers",
+        "zanzibar",
+        "unapatikana",
+        "inapatikana",
+        "ni kiasi",
+        "shilingi"
+    ];
+
+    const isSwahili = swahiliWords.some(word =>
+        text.includes(word)
+    );
+
+
+    if (isSwahili) {
+
+        return "Karibu ONA TOWERS Zanzibar. Tafadhali niambie ungependa kujua nini kuhusu mradi wetu, kama vile vyumba, ukubwa wa apartments, views au penthouses.";
+
     }
 
 
-    res.writeHead(404, {
-        "Content-Type": "text/plain"
-    });
-
-    res.end("Not found");
-});
+    return "Welcome to ONA TOWERS, Zanzibar. Please tell me what you would like to know about the development, such as apartments, sizes, views, or penthouses.";
+}
 
 
-server.listen(PORT, "0.0.0.0", () => {
-
-    console.log(`HTTP server running on port ${PORT}`);
-
-});
-
-
-// ============================================================
-// WHATSAPP BOT
-// ============================================================
 
 async function startBot() {
 
@@ -457,7 +238,6 @@ async function startBot() {
         }),
 
         printQRInTerminal: false
-
     });
 
 
@@ -475,8 +255,6 @@ async function startBot() {
 
         if (qr) {
 
-            latestQR = qr;
-
             console.log(
                 "\nNew WhatsApp QR generated."
             );
@@ -485,21 +263,13 @@ async function startBot() {
                 "Open /qr in your browser to scan it."
             );
 
-            qrcodeTerminal.generate(
-                qr,
-                {
-                    small: true
-                }
-            );
-
+            qrcode.generate(qr, {
+                small: true
+            });
         }
 
 
         if (connection === "open") {
-
-            whatsappConnected = true;
-
-            latestQR = null;
 
             console.log(
                 "\n================================="
@@ -516,17 +286,17 @@ async function startBot() {
             console.log(
                 "=================================\n"
             );
-
         }
 
 
         if (connection === "close") {
 
-            whatsappConnected = false;
+            const statusCode =
+                lastDisconnect?.error?.output?.statusCode;
+
 
             const shouldReconnect =
-                lastDisconnect?.error?.output?.statusCode !==
-                DisconnectReason.loggedOut;
+                statusCode !== DisconnectReason.loggedOut;
 
 
             console.log(
@@ -551,12 +321,10 @@ async function startBot() {
                 console.log(
                     "WhatsApp logged out."
                 );
-
             }
-
         }
-
     });
+
 
 
     sock.ev.on(
@@ -566,14 +334,12 @@ async function startBot() {
             const message = messages[0];
 
 
-            if (!message.message) {
+            if (!message || !message.message)
                 return;
-            }
 
 
-            if (message.key.fromMe) {
+            if (message.key.fromMe)
                 return;
-            }
 
 
             const text =
@@ -582,9 +348,12 @@ async function startBot() {
                 "";
 
 
-            if (!text.trim()) {
+            if (!text.trim())
                 return;
-            }
+
+
+            const chatId =
+                message.key.remoteJid;
 
 
             console.log(
@@ -597,7 +366,7 @@ async function startBot() {
 
                 await sock.sendPresenceUpdate(
                     "composing",
-                    message.key.remoteJid
+                    chatId
                 );
 
 
@@ -605,42 +374,75 @@ async function startBot() {
                     await askGemini(text);
 
 
-                await sock.sendMessage(
-                    message.key.remoteJid,
-                    {
-                        text: reply
-                    }
-                );
+                if (reply) {
+
+                    await sock.sendMessage(
+                        chatId,
+                        {
+                            text: reply
+                        }
+                    );
 
 
-                console.log(
-                    "Bot:",
-                    reply
-                );
+                    console.log(
+                        "Bot:",
+                        reply
+                    );
+
+                } else {
+
+                    const fallback =
+                        getFallbackReply(text);
+
+
+                    await sock.sendMessage(
+                        chatId,
+                        {
+                            text: fallback
+                        }
+                    );
+
+
+                    console.log(
+                        "Fallback:",
+                        fallback
+                    );
+                }
 
 
             } catch (error) {
 
                 console.error(
-                    "Gemini error:",
-                    error
+                    "Message handling error:",
+                    error?.message || error
                 );
 
 
-                await sock.sendMessage(
-                    message.key.remoteJid,
-                    {
-                        text:
-                            "Sorry, I'm having a temporary problem. Please try again shortly."
-                    }
-                );
+                try {
 
+                    const fallback =
+                        getFallbackReply(text);
+
+
+                    await sock.sendMessage(
+                        chatId,
+                        {
+                            text: fallback
+                        }
+                    );
+
+                } catch (sendError) {
+
+                    console.error(
+                        "Could not send fallback message:",
+                        sendError?.message || sendError
+                    );
+                }
             }
-
         }
     );
-
 }
+
 
 
 startBot();
