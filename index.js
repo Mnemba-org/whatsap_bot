@@ -1,4 +1,6 @@
-﻿const {
+const http = require("http");
+
+const {
     default: makeWASocket,
     useMultiFileAuthState,
     DisconnectReason
@@ -108,6 +110,7 @@ const ONA_TOWERS_KNOWLEDGE = [
     "- Answer in the same language used by the customer when possible."
 ].join("\n");
 
+
 async function askGemini(userMessage) {
     const prompt = [
         ONA_TOWERS_KNOWLEDGE,
@@ -126,7 +129,9 @@ async function askGemini(userMessage) {
     return response.text;
 }
 
+
 async function startBot() {
+
     const { state, saveCreds } =
         await useMultiFileAuthState("auth_info");
 
@@ -138,7 +143,9 @@ async function startBot() {
 
     sock.ev.on("creds.update", saveCreds);
 
+
     sock.ev.on("connection.update", (update) => {
+
         const { connection, lastDisconnect, qr } = update;
 
         if (qr) {
@@ -146,14 +153,19 @@ async function startBot() {
             qrcode.generate(qr, { small: true });
         }
 
+
         if (connection === "open") {
+
             console.log("\n=================================");
             console.log("WhatsApp connected successfully!");
             console.log("ONA TOWERS AI chatbot is ready.");
             console.log("=================================\n");
+
         }
 
+
         if (connection === "close") {
+
             const shouldReconnect =
                 lastDisconnect?.error?.output?.statusCode !==
                 DisconnectReason.loggedOut;
@@ -161,15 +173,24 @@ async function startBot() {
             console.log("WhatsApp connection closed.");
 
             if (shouldReconnect) {
+
                 console.log("Reconnecting...");
-                startBot();
+
+                setTimeout(() => {
+                    startBot();
+                }, 3000);
+
             } else {
+
                 console.log("WhatsApp logged out.");
+
             }
         }
     });
 
+
     sock.ev.on("messages.upsert", async ({ messages }) => {
+
         const message = messages[0];
 
         if (!message.message) return;
@@ -185,6 +206,7 @@ async function startBot() {
         console.log("\nCustomer:", text);
 
         try {
+
             await sock.sendPresenceUpdate(
                 "composing",
                 message.key.remoteJid
@@ -202,6 +224,7 @@ async function startBot() {
             console.log("Bot:", reply);
 
         } catch (error) {
+
             console.error("Gemini error:", error);
 
             await sock.sendMessage(
@@ -213,5 +236,40 @@ async function startBot() {
         }
     });
 }
+
+
+// ============================================================
+// RENDER HTTP SERVER
+// ============================================================
+
+const PORT = process.env.PORT || 10000;
+
+const server = http.createServer((req, res) => {
+
+    if (req.url === "/health") {
+
+        res.writeHead(200, {
+            "Content-Type": "text/plain"
+        });
+
+        res.end("ONA TOWERS WhatsApp bot is running");
+
+        return;
+    }
+
+    res.writeHead(200, {
+        "Content-Type": "text/plain"
+    });
+
+    res.end("ONA TOWERS WhatsApp bot");
+});
+
+
+server.listen(PORT, "0.0.0.0", () => {
+
+    console.log(`HTTP server running on port ${PORT}`);
+
+});
+
 
 startBot();
