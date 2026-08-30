@@ -1,3 +1,4 @@
+```javascript
 const {
     default: makeWASocket,
     useMultiFileAuthState,
@@ -5,15 +6,27 @@ const {
 } = require("@whiskeysockets/baileys");
 
 const P = require("pino");
-const qrcode = require("qrcode-terminal");
+const qrcodeTerminal = require("qrcode-terminal");
+const QRCode = require("qrcode");
+const http = require("http");
+
 require("dotenv").config();
 
 const { GoogleGenAI } = require("@google/genai");
+
+
+/* ============================================================
+   GEMINI
+============================================================ */
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY
 });
 
+
+/* ============================================================
+   ONA TOWERS KNOWLEDGE
+============================================================ */
 
 const ONA_TOWERS_KNOWLEDGE = [
     "You are the AI assistant for ONA TOWERS in Zanzibar.",
@@ -117,6 +130,9 @@ const ONA_TOWERS_KNOWLEDGE = [
 ].join("\n");
 
 
+/* ============================================================
+   GEMINI REQUEST WITH RETRIES
+============================================================ */
 
 async function askGemini(userMessage) {
 
@@ -132,6 +148,7 @@ async function askGemini(userMessage) {
 
     const maxAttempts = 3;
 
+
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
 
         try {
@@ -141,11 +158,16 @@ async function askGemini(userMessage) {
                 contents: prompt
             });
 
+
             if (response && response.text) {
                 return response.text.trim();
             }
 
-            throw new Error("Gemini returned an empty response.");
+
+            throw new Error(
+                "Gemini returned an empty response."
+            );
+
 
         } catch (error) {
 
@@ -154,22 +176,19 @@ async function askGemini(userMessage) {
                 error?.message || error
             );
 
+
             if (attempt < maxAttempts) {
 
                 const waitTime = attempt * 3000;
+
 
                 console.log(
                     `Retrying Gemini in ${waitTime / 1000} seconds...`
                 );
 
+
                 await new Promise(resolve =>
                     setTimeout(resolve, waitTime)
-                );
-
-            } else {
-
-                console.error(
-                    "Gemini failed after all retry attempts."
                 );
             }
         }
@@ -180,10 +199,14 @@ async function askGemini(userMessage) {
 }
 
 
+/* ============================================================
+   FALLBACK RESPONSE
+============================================================ */
 
 function getFallbackReply(userMessage) {
 
     const text = userMessage.toLowerCase();
+
 
     const swahiliWords = [
         "habari",
@@ -194,7 +217,6 @@ function getFallbackReply(userMessage) {
         "gharama",
         "nyumba",
         "vyumba",
-        "apartimenti",
         "ghorofa",
         "mradi",
         "ona tower",
@@ -203,8 +225,11 @@ function getFallbackReply(userMessage) {
         "unapatikana",
         "inapatikana",
         "ni kiasi",
-        "shilingi"
+        "shilingi",
+        "chumba",
+        "vyumba"
     ];
+
 
     const isSwahili = swahiliWords.some(word =>
         text.includes(word)
@@ -222,11 +247,211 @@ function getFallbackReply(userMessage) {
 }
 
 
+/* ============================================================
+   QR CODE FOR BROWSER
+============================================================ */
+
+let latestQR = null;
+let qrImageData = null;
+
+
+async function updateQR(qr) {
+
+    latestQR = qr;
+
+
+    try {
+
+        qrImageData = await QRCode.toDataURL(qr, {
+            width: 500,
+            margin: 2
+        });
+
+
+        console.log(
+            "Browser QR code updated."
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Could not generate browser QR:",
+            error?.message || error
+        );
+    }
+}
+
+
+/* ============================================================
+   HTTP SERVER FOR RENDER
+============================================================ */
+
+const PORT = process.env.PORT || 10000;
+
+
+const server = http.createServer(
+    async (req, res) => {
+
+
+        /* ----------------------------------------------------
+           QR PAGE
+        ---------------------------------------------------- */
+
+        if (req.url === "/qr") {
+
+            res.writeHead(200, {
+                "Content-Type": "text/html; charset=utf-8"
+            });
+
+
+            if (qrImageData) {
+
+                res.end(`
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1">
+
+<title>ONA TOWERS WhatsApp QR</title>
+
+<style>
+
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #f5f5f5;
+    margin: 0;
+    padding: 30px;
+}
+
+.container {
+    max-width: 700px;
+    margin: auto;
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+img {
+    width: 500px;
+    max-width: 90vw;
+    height: auto;
+}
+
+h1 {
+    margin-bottom: 10px;
+}
+
+p {
+    color: #555;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>ONA TOWERS WhatsApp</h1>
+
+<p>Scan this QR code with the WhatsApp phone.</p>
+
+<img src="${qrImageData}" />
+
+<p>Keep this page open while scanning.</p>
+
+</div>
+
+</body>
+</html>
+                `);
+
+            } else {
+
+                res.end(`
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1">
+
+<meta http-equiv="refresh" content="5">
+
+<title>ONA TOWERS QR</title>
+
+</head>
+
+<body style="
+    font-family: Arial;
+    text-align: center;
+    padding: 50px;
+">
+
+<h1>ONA TOWERS WhatsApp</h1>
+
+<p>Waiting for a new WhatsApp QR code...</p>
+
+<p>This page will refresh automatically.</p>
+
+</body>
+
+</html>
+                `);
+            }
+
+
+            return;
+        }
+
+
+        /* ----------------------------------------------------
+           HEALTH CHECK
+        ---------------------------------------------------- */
+
+        res.writeHead(200, {
+            "Content-Type": "text/plain; charset=utf-8"
+        });
+
+
+        res.end(
+            "ONA TOWERS WhatsApp AI chatbot is running."
+        );
+    }
+);
+
+
+server.listen(
+    PORT,
+    "0.0.0.0",
+    () => {
+
+        console.log(
+            `HTTP server running on port ${PORT}`
+        );
+
+    }
+);
+
+
+/* ============================================================
+   WHATSAPP BOT
+============================================================ */
 
 async function startBot() {
 
-    const { state, saveCreds } =
-        await useMultiFileAuthState("auth_info");
+    const {
+        state,
+        saveCreds
+    } = await useMultiFileAuthState(
+        "auth_info"
+    );
 
 
     const sock = makeWASocket({
@@ -241,100 +466,139 @@ async function startBot() {
     });
 
 
-    sock.ev.on("creds.update", saveCreds);
+    sock.ev.on(
+        "creds.update",
+        saveCreds
+    );
 
 
-    sock.ev.on("connection.update", (update) => {
+    sock.ev.on(
+        "connection.update",
+        async (update) => {
 
-        const {
-            connection,
-            lastDisconnect,
-            qr
-        } = update;
-
-
-        if (qr) {
-
-            console.log(
-                "\nNew WhatsApp QR generated."
-            );
-
-            console.log(
-                "Open /qr in your browser to scan it."
-            );
-
-            qrcode.generate(qr, {
-                small: true
-            });
-        }
+            const {
+                connection,
+                lastDisconnect,
+                qr
+            } = update;
 
 
-        if (connection === "open") {
+            /* ------------------------------------------------
+               NEW QR
+            ------------------------------------------------ */
 
-            console.log(
-                "\n================================="
-            );
-
-            console.log(
-                "WhatsApp connected successfully!"
-            );
-
-            console.log(
-                "ONA TOWERS AI chatbot is ready."
-            );
-
-            console.log(
-                "=================================\n"
-            );
-        }
-
-
-        if (connection === "close") {
-
-            const statusCode =
-                lastDisconnect?.error?.output?.statusCode;
-
-
-            const shouldReconnect =
-                statusCode !== DisconnectReason.loggedOut;
-
-
-            console.log(
-                "WhatsApp connection closed."
-            );
-
-
-            if (shouldReconnect) {
+            if (qr) {
 
                 console.log(
-                    "Reconnecting in 3 seconds..."
+                    "\nNew WhatsApp QR generated."
                 );
 
-                setTimeout(() => {
-
-                    startBot();
-
-                }, 3000);
-
-            } else {
 
                 console.log(
-                    "WhatsApp logged out."
+                    "Open /qr in your browser to scan it."
+                );
+
+
+                qrcodeTerminal.generate(
+                    qr,
+                    {
+                        small: true
+                    }
+                );
+
+
+                await updateQR(qr);
+            }
+
+
+            /* ------------------------------------------------
+               CONNECTED
+            ------------------------------------------------ */
+
+            if (connection === "open") {
+
+                console.log(
+                    "\n================================="
+                );
+
+
+                console.log(
+                    "WhatsApp connected successfully!"
+                );
+
+
+                console.log(
+                    "ONA TOWERS AI chatbot is ready."
+                );
+
+
+                console.log(
+                    "=================================\n"
                 );
             }
+
+
+            /* ------------------------------------------------
+               DISCONNECTED
+            ------------------------------------------------ */
+
+            if (connection === "close") {
+
+                const statusCode =
+                    lastDisconnect?.error?.output?.statusCode;
+
+
+                const shouldReconnect =
+                    statusCode !==
+                    DisconnectReason.loggedOut;
+
+
+                console.log(
+                    "WhatsApp connection closed."
+                );
+
+
+                if (shouldReconnect) {
+
+                    console.log(
+                        "Reconnecting in 3 seconds..."
+                    );
+
+
+                    setTimeout(() => {
+
+                        startBot();
+
+                    }, 3000);
+
+                } else {
+
+                    console.log(
+                        "WhatsApp logged out."
+                    );
+                }
+            }
         }
-    });
+    );
 
 
+    /* ========================================================
+       RECEIVE MESSAGES
+    ======================================================== */
 
     sock.ev.on(
         "messages.upsert",
         async ({ messages }) => {
 
+
             const message = messages[0];
 
 
-            if (!message || !message.message)
+            if (!message)
+                return;
+
+
+            if (!message.message)
                 return;
 
 
@@ -364,6 +628,7 @@ async function startBot() {
 
             try {
 
+
                 await sock.sendPresenceUpdate(
                     "composing",
                     chatId
@@ -373,6 +638,10 @@ async function startBot() {
                 const reply =
                     await askGemini(text);
 
+
+                /* --------------------------------------------
+                   NORMAL GEMINI RESPONSE
+                -------------------------------------------- */
 
                 if (reply) {
 
@@ -389,7 +658,15 @@ async function startBot() {
                         reply
                     );
 
-                } else {
+
+                }
+
+
+                /* --------------------------------------------
+                   GEMINI FAILED AFTER RETRIES
+                -------------------------------------------- */
+
+                else {
 
                     const fallback =
                         getFallbackReply(text);
@@ -412,6 +689,7 @@ async function startBot() {
 
             } catch (error) {
 
+
                 console.error(
                     "Message handling error:",
                     error?.message || error
@@ -419,6 +697,7 @@ async function startBot() {
 
 
                 try {
+
 
                     const fallback =
                         getFallbackReply(text);
@@ -430,6 +709,7 @@ async function startBot() {
                             text: fallback
                         }
                     );
+
 
                 } catch (sendError) {
 
@@ -444,5 +724,9 @@ async function startBot() {
 }
 
 
+/* ============================================================
+   START BOT
+============================================================ */
 
 startBot();
+```
