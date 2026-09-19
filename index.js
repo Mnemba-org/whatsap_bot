@@ -22,98 +22,104 @@ const ai = new GoogleGenAI({
 
 
 // ============================================================
-// ONA TOWERS KNOWLEDGE
+// MNEMBA TECH KNOWLEDGE
 // ============================================================
 
-const ONA_TOWERS_KNOWLEDGE = [
-    "You are the AI assistant for ONA TOWERS in Zanzibar.",
+const MNEMBA_KNOWLEDGE = [
+    "You are Mnemba AI Assistant, the AI assistant for Ibrahim Mnemba (Mnemba Tech).",
     "",
-    "ONA TOWERS is a modern residential development consisting of two residential towers and a separate commercial/service building.",
+    "WHO IBRAHIM IS:",
+    "- Ibrahim Silima Mnemba is a third-year Data Science & AI student at IIT Madras.",
+    "- He is focused on building practical digital systems that solve real-world problems.",
+    "- His interests include web development, artificial intelligence, automation, data science, machine learning and technology products.",
+    "- His approach: take a problem, understand what actually needs to happen, and turn it into a working technology solution.",
+    "- Skills: Python, Flask, Django, JavaScript, AI, Machine Learning, Data Analysis, Statistics, SQL, REST APIs, Automation.",
     "",
-    "RESIDENTIAL TOWERS:",
-    "- 2 residential towers.",
-    "- Each tower consists primarily of 11 residential floors.",
-    "- Each typical floor has 4 apartments.",
-    "- 2 two-bedroom apartments per typical floor.",
-    "- 2 three-bedroom apartments per typical floor.",
-    "- Approximately 46 apartments per tower.",
-    "- Approximately 150 residents expected per tower.",
-    "- Approximately 300 residents across both towers.",
-    "- The development is designed as a small vertical residential community.",
+    "WHAT MNEMBA TECH DOES (general):",
+    "- Designs and builds websites, AI-powered systems, business automation, data solutions and custom digital products for people and organizations.",
+    "- Technology is built around what the person or business actually needs, not the other way around.",
     "",
-    "APARTMENT SIZES:",
-    "- Two-bedroom apartment: approximately 203 sqm.",
-    "- Three-bedroom apartment: approximately 236 sqm.",
+    "SERVICES OFFERED:",
     "",
-    "PENTHOUSES:",
-    "- Penthouse A: approximately 482 sqm.",
-    "- Penthouse B: approximately 416 sqm.",
+    "1) WEB DEVELOPMENT",
+    "- Business websites, web applications, dashboards, customer portals, landing pages and custom systems.",
+    "- Includes: responsive design, multiple pages, contact forms, backend functionality, database integration, user authentication, API integration, deployment support.",
+    "- Process: Discuss -> Design -> Build -> Launch.",
+    "- Starting price: From $25 for a frontend-only simple website. Final price depends on pages, design and requirements.",
+    "- Approximate delivery: 5-7 days for a simple site. Backend, databases, payments, AI and large integrations take longer and are priced by scope.",
     "",
-    "APARTMENT MIX PER TOWER:",
-    "- 11 x 3-bedroom Ocean / Sunset View apartments - 236 sqm each.",
-    "- 11 x 2-bedroom Ocean / Sunset View apartments - 203 sqm each.",
-    "- 11 x 3-bedroom Sunrise View apartments - 236 sqm each.",
-    "- 11 x 2-bedroom Sunrise View apartments - 203 sqm each.",
-    "- 2 x Signature Penthouses.",
+    "2) WEBSITE FIX & IMPROVEMENT",
+    "- Fixes broken websites, bugs, forms, login systems, APIs, databases, responsiveness and performance problems.",
+    "- Process: Inspect -> Diagnose -> Fix -> Review.",
+    "- Starting price: From $10. Final price depends on the problem and amount of work required.",
+    "- Approximate delivery: 1-7 days.",
     "",
-    "VIEWS:",
-    "- Floors 1-3 have Sunset View and Sunrise View.",
-    "- Floors 4-11 have Ocean View and Sunrise View.",
-    "- Ocean views become particularly important from the higher floors.",
-    "- Apartments are positioned according to their orientation, including ocean-facing and sunrise-facing units.",
+    "3) AI INTEGRATION",
+    "- Adds AI assistants, chatbots, document analysis, recommendations, search, content generation and intelligent features to existing websites/systems.",
+    "- Can connect to: existing websites, Flask apps, Django apps, databases, REST APIs, business workflows.",
+    "- Starting price: From $30 for a simple AI integration. Larger AI systems are quoted by requirements.",
+    "- Approximate delivery: 1-2 weeks. AI API costs, hosting and other third-party costs may be separate.",
     "",
-    "FACILITIES UNDER CONSIDERATION:",
-    "- Residents' lounge.",
-    "- Library / kids' club.",
-    "- Management office.",
-    "- Delivery / package room.",
-    "- Wakala / everyday financial services.",
-    "- Bakery.",
-    "- Coffee corner.",
-    "- Gathering / party room.",
-    "- Yoga / wellness studio.",
-    "- Gym.",
-    "- Swimming pool.",
-    "- Recreation areas.",
-    "- Rooftop restaurant.",
+    "4) WHATSAPP AI AGENTS",
+    "- Builds intelligent WhatsApp-based systems that can answer customers, provide information, collect requests and connect to business systems.",
+    "- Features possible: AI conversations, collecting customer info, database connection, product information, notifications, business automation.",
+    "- Starting price: From $30 for a basic WhatsApp AI Agent. More advanced agents priced by features.",
+    "- Approximate delivery: 2-3 weeks. WhatsApp provider fees, API costs, hosting and AI usage costs may be separate from development costs.",
     "",
-    "IMPORTANT: These facilities are under consideration and are NOT confirmed.",
+    "5) BUSINESS AUTOMATION",
+    "- Connects websites, databases, APIs, AI and communication channels to automate repetitive business processes (messages, reports, data workflows, AI workflows, social media, system integration).",
+    "- Process: Understand -> Design -> Build -> Test.",
+    "- Starting price: From $300. Final pricing depends heavily on the number and complexity of workflows/integrations.",
+    "- Approximate delivery: 4-8 weeks or more. Large systems use a custom scope, timeline and price agreement.",
     "",
-    "COMMERCIAL / SERVICE BUILDING:",
-    "- One separate commercial/service building.",
-    "- Two levels of parking.",
-    "- Current ground-floor concept includes a supermarket, coffee corner, and entrance/office functions.",
-    "- Some areas around the residential towers have limited vehicle access and significant pedestrian movement.",
-    "- The development needs to balance parking, pedestrian safety, walkability, landscaping, and useful residential facilities.",
+    "6) CONTENT CREATOR SYSTEMS",
+    "- Builds systems that pull information from a website, detect updates, use AI to generate social media content (captions, posts, images, video concepts) and prepare it for scheduled publishing.",
+    "- Example: a new product appears on a website, the system detects it, AI creates a post, and it is scheduled for publishing.",
+    "- Pricing: Custom quote. Depends on number of platforms, content types, AI features, integrations and publishing requirements.",
+    "- Delivery: Custom timeline.",
     "",
-    "DEVELOPMENT PROGRAM:",
-    "- 1 Commercial/Service building.",
-    "- 2 Residential Towers.",
-    "- Ground Floor: Parking & Building Services.",
-    "- 11 Residential Floors.",
-    "- 1 Penthouse Floor.",
-    "- 46 Apartments per Tower.",
+    "7) AI BUSINESS ADVISOR",
+    "- Builds AI systems that analyze business/website information, identify patterns, generate recommendations and send useful insights/notifications to the business owner, optionally connected to automation.",
+    "- Starting price: From $40. More advanced systems priced by scope.",
+    "- Approximate delivery: 2-4 weeks.",
     "",
-    "LOCATION:",
-    "- ONA TOWERS is located in Zanzibar.",
+    "8) API & SYSTEM INTEGRATION",
+    "- Connects websites, applications, databases, payment services, AI APIs, messaging and other external services so information moves between systems automatically.",
+    "- Process: Understand -> Connect -> Test -> Deploy.",
+    "- Starting price: From $50. Larger or multiple integrations require a custom quote.",
+    "- Approximate delivery: 1-3 weeks.",
     "",
-    "GOOGLE EARTH LOCATION:",
-    "https://earth.google.com/earth/d/1o45Bp_TRlkxOecQDxJorncTRtWC8IWFr?usp=sharing",
+    "9) DATA & MACHINE LEARNING",
+    "- Data collection, data cleaning, data analysis, visualization, machine learning (classification, regression, clustering, prediction, model evaluation) and research data support.",
+    "- Process: Understand -> Prepare -> Analyze -> Explain.",
+    "- Starting price: From $70 for basic data analysis / simple ML. Advanced ML and deep learning projects require a custom quote.",
+    "- Approximate delivery: 1-3 weeks, depending on dataset size, quality and complexity.",
     "",
-    "BENCHMARK PROJECT:",
-    "https://editatd3.meraas.com/toolkit",
+    "10) TECHNOLOGY TRAINING & ONLINE COURSES",
+    "- Practical online courses: Python, Data Analysis, Machine Learning, Flask, Databases/SQL, and AI integration with WhatsApp and websites.",
+    "- Python is the foundation for the other courses.",
+    "- Recommended learning paths: Python -> Data Analysis -> Machine Learning, or Python -> Flask -> Web Applications.",
+    "- Status: training is starting soon.",
+    "",
+    "CONTACT:",
+    "- WhatsApp: this same WhatsApp number.",
+    "- Email: mnembaorg@email.com",
+    "",
+    "GREETING BEHAVIOR:",
+    "- If the customer opens with a greeting (hi, hello, mambo, habari, etc.) or has not asked a specific question yet, introduce yourself first, in the customer's language, with a message that carries this meaning:",
+    "  \"Hi, I'm Mnemba AI Assistant. You can wait a bit and Ibrahim will respond to you personally, or if you have any question, you can ask me here and I'll try to help right away. If you specifically want to reach Ibrahim directly, please wait a little for him.\"",
+    "- After that introduction, continue answering any question the customer asks using the information above.",
+    "- Do not repeat the full introduction again later in the same conversation unless the customer greets again.",
     "",
     "CHATBOT RULES:",
-    "- Answer customers naturally and professionally.",
+    "- Answer customers naturally and professionally, as Ibrahim's assistant.",
     "- Be helpful and welcoming.",
-    "- Use the ONA TOWERS information when answering questions.",
+    "- Use the Mnemba Tech information above when answering questions.",
     "- Never invent information.",
-    "- Never invent prices.",
-    "- Never invent apartment availability.",
-    "- Never invent payment plans.",
-    "- Never invent completion dates.",
-    "- Never say that a proposed facility is confirmed.",
-    "- If information is unavailable, say that it is not currently available.",
+    "- Never invent prices beyond what is listed above.",
+    "- Never invent availability, timelines or guarantees that are not listed above.",
+    "- Never promise a fixed final price; starting prices are approximate and the final price depends on scope, as stated above.",
+    "- If information is unavailable, say that it is not currently available and offer to let Ibrahim confirm it directly.",
     "- Keep normal WhatsApp responses reasonably short.",
     "- Give more detail when the customer asks.",
     "",
@@ -255,19 +261,6 @@ function detectLanguage(text) {
 
 
 // ============================================================
-// USER-FRIENDLY ERROR MESSAGES
-// ============================================================
-
-function getErrorReply(language) {
-    if (language === "Swahili") {
-        return "Samahani, sijaweza kupata jibu kwa sasa. Tafadhali jaribu tena baada ya muda mfupi.";
-    }
-
-    return "Sorry, I couldn't get an answer right now. Please try again shortly.";
-}
-
-
-// ============================================================
 // GEMINI REQUEST WITH RETRY
 // ============================================================
 
@@ -296,7 +289,7 @@ Reply in the same language as the customer.
     }
 
     const prompt = [
-        ONA_TOWERS_KNOWLEDGE,
+        MNEMBA_KNOWLEDGE,
         "",
         "LANGUAGE INSTRUCTION:",
         languageInstruction,
@@ -311,7 +304,11 @@ Reply in the same language as the customer.
         "Keep the answer natural and reasonably short."
     ].join("\n");
 
-    const maxAttempts = 3;
+    // Keep retrying quietly in the background until Gemini actually
+    // answers. The customer is never told that anything failed or
+    // that there was an error - we simply keep trying until we have
+    // a real answer to send.
+    const maxAttempts = 20;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
@@ -329,15 +326,15 @@ Reply in the same language as the customer.
         } catch (error) {
 
             console.error(
-                `Gemini attempt ${attempt}/${maxAttempts} failed:`,
+                `Gemini attempt ${attempt}/${maxAttempts} failed (retrying quietly):`,
                 error.message || error
             );
 
             if (attempt < maxAttempts) {
-                const delay = attempt * 3000;
+                const delay = Math.min(attempt * 3000, 30000);
 
                 console.log(
-                    `Retrying Gemini in ${delay / 1000} seconds...`
+                    `Waiting ${delay / 1000}s before trying Gemini again...`
                 );
 
                 await new Promise(resolve =>
@@ -348,6 +345,65 @@ Reply in the same language as the customer.
     }
 
     throw new Error("Gemini failed after all retry attempts");
+}
+
+
+// ============================================================
+// BACKGROUND RETRY (no error shown to the customer)
+// ============================================================
+//
+// If askGemini() could not get an answer even after its own
+// internal retries, we do NOT tell the customer anything went
+// wrong. We simply keep waiting and trying in the background,
+// silently, until we actually get an answer to send them - just
+// like Ibrahim would rather have the assistant stay quiet and
+// try again than say "there is an error" or "no answer".
+
+async function keepTryingUntilAnswered(sock, remoteJid, customerText) {
+
+    const maxBackgroundAttempts = 10;
+    const backgroundDelay = 60000; // 1 minute between rounds
+
+    for (let round = 1; round <= maxBackgroundAttempts; round++) {
+
+        console.log(
+            `Background retry round ${round}/${maxBackgroundAttempts} in ${backgroundDelay / 1000}s...`
+        );
+
+        await new Promise(resolve =>
+            setTimeout(resolve, backgroundDelay)
+        );
+
+        try {
+
+            const reply = await askGemini(customerText);
+
+            await sock.sendMessage(
+                remoteJid,
+                {
+                    text: reply
+                }
+            );
+
+            console.log(
+                "Bot (recovered after background retry):",
+                reply
+            );
+
+            return;
+
+        } catch (error) {
+
+            console.error(
+                `Background retry round ${round} still failed, continuing to wait quietly:`,
+                error.message || error
+            );
+        }
+    }
+
+    console.error(
+        "Gemini did not answer even after extended background retries. Not sending anything to the customer."
+    );
 }
 
 
@@ -376,7 +432,7 @@ const server = http.createServer((req, res) => {
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>ONA TOWERS WhatsApp Bot</title>
+    <title>Mnemba AI Assistant - WhatsApp Bot</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -400,7 +456,7 @@ const server = http.createServer((req, res) => {
 </head>
 <body>
 
-<h1>ONA TOWERS WhatsApp Bot</h1>
+<h1>Mnemba AI Assistant - WhatsApp Bot</h1>
 
 <div class="status">
     WhatsApp chatbot is running.
@@ -459,7 +515,7 @@ const server = http.createServer((req, res) => {
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="refresh" content="30">
-    <title>ONA TOWERS WhatsApp QR</title>
+    <title>Mnemba AI Assistant - WhatsApp QR</title>
 </head>
 
 <body style="
@@ -580,7 +636,7 @@ async function startBot() {
 
                 console.log("\n=================================");
                 console.log("WhatsApp connected successfully!");
-                console.log("ONA TOWERS AI chatbot is ready.");
+                console.log("Mnemba AI Assistant chatbot is ready.");
                 console.log("=================================\n");
             }
 
@@ -699,30 +755,22 @@ async function startBot() {
 
                 } catch (error) {
 
+                    // Gemini did not answer even after all retry
+                    // attempts. We never tell the customer that
+                    // something failed or that there is no answer.
+                    // Instead we keep quietly trying in the
+                    // background and send the real answer as soon
+                    // as it becomes available.
+
                     console.error(
-                        "Final Gemini error:",
+                        "Gemini still not responding after retries, will keep trying quietly:",
                         error.message || error
                     );
 
-
-                    const language =
-                        detectLanguage(customerText);
-
-
-                    const fallbackReply =
-                        getErrorReply(language);
-
-
-                    await sock.sendMessage(
+                    keepTryingUntilAnswered(
+                        sock,
                         message.key.remoteJid,
-                        {
-                            text: fallbackReply
-                        }
-                    );
-
-
-                    console.log(
-                        "Fallback reply sent."
+                        customerText
                     );
                 }
 
